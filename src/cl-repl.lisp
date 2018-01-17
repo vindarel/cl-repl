@@ -1,7 +1,7 @@
 (in-package #:cl-user)
 (defpackage #:cl-repl
   (:use #:cl)
-  (:export +version+ *splash* repl))
+  (:export +version+ *splash* repl main))
 (in-package #:cl-repl)
 
 (defconstant +version+ :0.3.2)
@@ -312,3 +312,55 @@
 		    (setf *last-input* buf)
 		    (eval-input (read-from-string (concatenate 'string "(progn " buf ")"))))))))
     (loop (print-with-handler (eval-input (read-input))))))
+
+
+(opts:define-opts
+  ;TODO: put in other file, test with roswell.
+  (:name :help
+         :description "Print this help and exit."
+         :short #\h
+         :long "help")
+  (:name :version
+         :description "Show the version info and exit."
+         :short #\v
+         :long "version")
+  (:name :load
+         :description "Load <file> at startup."
+         :arg-parser #'parse-namestring  ;; parser ok ?
+         :required t
+         :short #\l
+         :long "load"))
+
+(defun handle-parser-error (condition)
+  "Explain the condition, print the help and exit."
+  (format t "~a .~%" condition)
+  (opts:describe)
+  (uiop:quit))
+
+(defun main (&key argv versions-string)
+  "Entry point for the executable and roswell."
+  (multiple-value-bind (options free-args)
+      (handler-bind ((opts:unknown-option #'handle-parser-error)
+                     (opts:missing-arg #'handle-parser-error)
+                     (opts:arg-parser-failed #'handle-parser-error)
+                     ;; (opts:missing-required-option #'missing-required-option) ;; in recent version.
+                     )
+        (opts:get-opts))
+
+    (if (getf options :help)
+        (progn
+          (opts:describe
+           :prefix "A full-featured Common Lisp REPL implementation."
+           :args "<file>")
+          (uiop:quit)
+          ))
+
+    (if (getf options :version)
+        (progn
+          (format t "cl-repl v~a~&" +version+)
+          (uiop:quit)))
+
+    (if (getf options :load)
+        (repl :load (getf options :load))
+        (repl)))
+  )

@@ -17,10 +17,11 @@
 	       #:inferior-shell
 	       #:trivial-timeout
 	       #:trivial-documentation
-	       #:split-sequence)
+	       #:split-sequence
+               #:unix-opts)
   :components ((:module "src" :components ((:file "cl-repl"))))
   :build-operation "program-op"
   :build-pathname "cl-repl"
-  :entry-point "cl-repl:repl"
+  :entry-point "cl-repl:main"
   :description "A full-featured repl implementation."
   :long-description "A full-featured repl implementation.")
