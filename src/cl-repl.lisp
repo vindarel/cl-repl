@@ -315,7 +315,6 @@
 
 
 (opts:define-opts
-  ;TODO: put in other file, test with roswell.
   (:name :help
          :description "Print this help and exit."
          :short #\h
@@ -345,7 +344,9 @@
                      (opts:arg-parser-failed #'handle-parser-error)
                      ;; (opts:missing-required-option #'missing-required-option) ;; in recent version.
                      )
-        (opts:get-opts))
+        (if argv
+            (opts:get-opts argv)
+            (opts:get-opts)))
 
     (if (getf options :help)
         (progn
@@ -361,6 +362,8 @@
           (uiop:quit)))
 
     (if (getf options :load)
-        (repl :load (getf options :load))
+        (progn
+          (format t "~a~%" (concatenate 'string *splash* versions-string))
+          (repl :load (getf options :load)))
         (repl)))
   )
